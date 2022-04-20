@@ -2,23 +2,22 @@ package com.thvnhng.mockproject.Entity;
 
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
 @Data
 public class Users extends AbstractEntity{
 
-    @Column(name = "username")
+    @Column(name = "username", unique = true, nullable = false, length = 100)
     private String username;
 
-    @Column(name = "password")
+    @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "email")
+    @Column(name = "email", unique = true, nullable = false)
     private String email;
 
     @Column(name = "gender")
@@ -33,5 +32,18 @@ public class Users extends AbstractEntity{
     @Column(name = "birth_date")
     private Date birthDate;
 
+    @Column(name = "status", nullable = false)
+    private Integer status;
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private List<Roles> rolesList;
+
+    @ManyToMany
+    @JoinTable(name = "user_course", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "course_id"))
+    private List<Courses> coursesList;
+
+    @OneToMany(mappedBy = "user")
+    private List<Reports> reportsList;
 
 }

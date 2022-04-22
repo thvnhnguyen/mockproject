@@ -1,12 +1,15 @@
 package com.thvnhng.mockproject.Entity;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @MappedSuperclass
-@Data
+@Getter
+@Setter
 public abstract class AbstractEntity {
 
     @Id

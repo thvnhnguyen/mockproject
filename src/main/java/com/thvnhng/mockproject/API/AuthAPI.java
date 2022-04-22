@@ -6,10 +6,8 @@ import com.thvnhng.mockproject.payload.request.LoginRequest;
 import com.thvnhng.mockproject.payload.request.SignUpRequest;
 import com.thvnhng.mockproject.payload.response.MessageResponse;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,7 +31,7 @@ public class AuthAPI {
     }
 
     @PostMapping("/signup")
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> registerUser(@RequestBody SignUpRequest signUpRequest) {
 
         if (signUpRequest.getUsername().length() < 7) {

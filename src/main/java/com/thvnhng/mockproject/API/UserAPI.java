@@ -1,7 +1,10 @@
 package com.thvnhng.mockproject.API;
 
 import com.thvnhng.mockproject.DTO.UserDTO;
+import com.thvnhng.mockproject.ExcelModel.BaseExportExcelModel;
+import com.thvnhng.mockproject.ExcelModel.UserExportExcelModel;
 import com.thvnhng.mockproject.Exception.NotFoundExcep;
+import com.thvnhng.mockproject.Service.ExportExcelFileService;
 import com.thvnhng.mockproject.Service.UserService;
 import com.thvnhng.mockproject.constant.SystemConstant;
 import com.thvnhng.mockproject.payload.response.MessageResponse;
@@ -10,15 +13,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
-@RestController("/api/users")
+@RestController(value = "userAPI")
+@RequestMapping("/api/users")
 @AllArgsConstructor
 public class UserAPI {
 
     private final UserService userService;
+    private final ExportExcelFileService exportExcelFileService;
 
-    @GetMapping("")
+    @GetMapping("/all")
     public List<UserDTO> list() {
         return userService.listALl();
     }
@@ -51,7 +57,7 @@ public class UserAPI {
         return ResponseEntity.ok().body(new MessageResponse("Updated"));
     }
 
-    @PutMapping("")
+    @PutMapping("/admin")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> updateUser(@RequestBody UserDTO userDTO) {
         if (!userService.checkExistUsernameAndEmail(userDTO.getUsername(), userDTO.getEmail())) {
@@ -81,6 +87,28 @@ public class UserAPI {
         }
         userService.setStatus(id, SystemConstant.INACTIVE_STATUS);
         return ResponseEntity.ok().body(new MessageResponse("User inactivated"));
+    }
+
+    @GetMapping("/export")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> export() {
+        List<BaseExportExcelModel> metaList = new ArrayList<>();
+        List<UserDTO> userDTOList = userService.listALl();
+        for (UserDTO userDTO : userDTOList) {
+            metaList.add(new UserExportExcelModel(
+                    userDTO.getUsername(),
+                    userDTO.getPassword(),
+                    userDTO.getFirstName(),
+                    userDTO.getLastName(),
+                    userDTO.getEmail(),
+                    userDTO.getGender(),
+                    userDTO.getContactNumber(),
+                    userDTO.getAddress(),
+                    userDTO.getBirthDate(),
+                    userDTO.getStatus()));
+        }
+        exportExcelFileService.exportFile("DSUser", "userList", metaList, UserExportExcelModel.class);
+        return ResponseEntity.ok().body(new MessageResponse("Success"));
     }
 
 }

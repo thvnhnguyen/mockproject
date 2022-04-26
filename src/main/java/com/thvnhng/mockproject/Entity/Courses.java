@@ -16,7 +16,11 @@ public class Courses extends AbstractEntity{
     @Column(name = "school_year")
     private Integer schoolYear;
 
-    @ManyToMany(mappedBy = "coursesList")
+    @Column(name = "status")
+    private Integer status;
+
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(name = "course_user", joinColumns = @JoinColumn(name = "course_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
     private List<Users> usersList;
 
     @OneToMany(mappedBy = "course")

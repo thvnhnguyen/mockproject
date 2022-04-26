@@ -27,18 +27,4 @@ public class Roles extends AbstractEntity{
     @ManyToMany(mappedBy = "rolesList")
     private List<Users> usersList;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-        Roles role = (Roles) o;
-        return Objects.equals(id, role.id) && Objects.equals(roleName, role.roleName);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), id, roleName);
-    }
 }

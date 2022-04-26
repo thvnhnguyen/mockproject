@@ -17,7 +17,8 @@ public class CourseDTO {
     private LocalDateTime lastModifiedDate;
     private String courseName;
     private Integer schoolYear;
-    private List<UserDTO> userDTOList;
-    private List<ReportDTO> reportDTOList;
+    private Integer status;
+    private List<String> usersList;
+    private List<String> reportsList;
 
 }

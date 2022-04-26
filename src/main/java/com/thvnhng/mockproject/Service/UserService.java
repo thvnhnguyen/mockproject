@@ -13,7 +13,7 @@ public interface UserService {
     UserDTO detail(Long id);
     UserDTO updateUserInfo(UserDTO userDTO);
     UserDTO updateUserRoles(UserDTO userDTO);
-    UserDTO setStatus(Long id, Integer status);
+    void setStatus(Long id, Integer status);
     List<UserDTO> listALl();
     List<UserDTO> listUserByStatus(Integer status);
 

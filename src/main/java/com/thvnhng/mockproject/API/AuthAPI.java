@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+
 @RestController(value = "authenticationAPI")
 @RequestMapping("/api/auth")
 @AllArgsConstructor
@@ -34,17 +35,17 @@ public class AuthAPI {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> registerUser(@RequestBody SignUpRequest signUpRequest) {
 
-        if (signUpRequest.getUsername().length() < 7) {
+        if (signUpRequest.getUsername().trim().length() < 7) {
             return ResponseEntity
                     .badRequest()
                     .body(new MessageResponse("Minimum username length is 7"));
         }
-        if (signUpRequest.getPassword().length() < 6 || signUpRequest.getPassword().length() > 25) {
+        if (signUpRequest.getPassword().trim().length() < 6 || signUpRequest.getPassword().trim().length() > 25) {
             return ResponseEntity
                     .badRequest()
                     .body(new MessageResponse("Password contains between 6 and 25 characters"));
         }
-        if (signUpRequest.getEmail().length() < 10) {
+        if (signUpRequest.getEmail().trim().length() < 10) {
             return ResponseEntity
                     .badRequest()
                     .body(new MessageResponse("Invalid email"));

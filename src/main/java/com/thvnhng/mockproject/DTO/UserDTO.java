@@ -16,12 +16,15 @@ public class UserDTO {
     private LocalDateTime lastModifiedDate;
     private String username;
     private String password;
+    private String firstName;
+    private String lastName;
     private String email;
     private Character gender;
     private String contactNumber;
     private String address;
     private Date birthDate;
     private Integer status;
-    private List<String> roleDTOList;
-    private List<CourseDTO> courseDTOList;
+    private List<String> roleList;
+    private List<String> coursesList;
+    private List<String> reportsList;
 }

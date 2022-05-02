@@ -10,6 +10,7 @@ public class MockprojectApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(MockprojectApplication.class, args);
+
     }
 
 }

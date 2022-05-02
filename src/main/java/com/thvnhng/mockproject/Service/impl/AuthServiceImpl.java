@@ -10,7 +10,6 @@ import com.thvnhng.mockproject.Repository.UserRepository;
 import com.thvnhng.mockproject.Security.jwt.JwtUtils;
 import com.thvnhng.mockproject.Security.services.UserDetailsImpl;
 import com.thvnhng.mockproject.Service.AuthService;
-import com.thvnhng.mockproject.constant.SystemConstant;
 import com.thvnhng.mockproject.payload.request.LoginRequest;
 import com.thvnhng.mockproject.payload.request.SignUpRequest;
 import com.thvnhng.mockproject.payload.response.JwtResponse;
@@ -51,22 +50,4 @@ public class AuthServiceImpl implements AuthService {
         return new JwtResponse(jwt, userDetails.getUsername(), userDetails.getEmail(), roles);
     }
 
-    @Override
-    public UserDTO signUp(SignUpRequest signUpRequest) {
-        Users user = objectMapper.convertValue(signUpRequest, Users.class);
-        user.setPassword(encoder.encode(signUpRequest.getPassword()));
-        user.setStatus(SystemConstant.ACTIVE_STATUS);
-        List<String> strRoles = signUpRequest.getRoleList();
-        List<ERoles> eRolesList = new ArrayList<>();
-        for (String strRole : strRoles) {
-            if (strRole.equals(ERoles.ROLE_ADMIN.name())) {
-                eRolesList.add(ERoles.ROLE_ADMIN);
-            } else if (strRole.equals(ERoles.ROLE_STUDENT.name())) {
-                eRolesList.add(ERoles.ROLE_STUDENT);
-            }
-        }
-        List<Roles> roles = roleRepository.findByRoleNameIn(eRolesList);
-        user.setRolesList(roles);
-        return objectMapper.convertValue(userRepository.save(user), UserDTO.class);
-    }
 }

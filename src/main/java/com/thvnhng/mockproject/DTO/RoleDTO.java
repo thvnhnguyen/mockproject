@@ -13,6 +13,8 @@ public class RoleDTO {
     private String modifiedBy;
     private LocalDateTime createDate;
     private LocalDateTime lastModifiedDate;
+    protected String deletedBy;
+    protected LocalDateTime deletedAt;
     private ERoles roleName;
 
 }

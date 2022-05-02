@@ -14,7 +14,9 @@ public class SubjectDTO {
     private String modifiedBy;
     private LocalDateTime createDate;
     private LocalDateTime lastModifiedDate;
+    protected String deletedBy;
+    protected LocalDateTime deletedAt;
     private String subjectName;
-    private List<Reports> reportsList;
+    private List<String> reportsList;
 
 }

@@ -2,7 +2,6 @@ package com.thvnhng.mockproject.Security.services;
 
 import com.thvnhng.mockproject.Entity.Users;
 import com.thvnhng.mockproject.Repository.UserRepository;
-import com.thvnhng.mockproject.constant.SystemConstant;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,7 +16,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Users user = userRepository.findByUsernameAndStatus(username, SystemConstant.ACTIVE_STATUS)
+        Users user = userRepository.findByUsernameAndDeletedAtIsNull(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
         return UserDetailsImpl.build(user);
     }

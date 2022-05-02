@@ -65,7 +65,7 @@ public class AuthAPI {
                     .badRequest()
                     .body(new MessageResponse("Error: No roles are specified"));
         }
-        authService.signUp(signUpRequest);
+        userService.signUp(signUpRequest);
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
 
     }

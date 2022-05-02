@@ -2,15 +2,23 @@ package com.thvnhng.mockproject.Service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thvnhng.mockproject.DTO.CourseDTO;
+import com.thvnhng.mockproject.DTO.UserDTO;
 import com.thvnhng.mockproject.Entity.Courses;
+import com.thvnhng.mockproject.Entity.ERoles;
+import com.thvnhng.mockproject.Entity.Reports;
+import com.thvnhng.mockproject.Entity.Users;
+import com.thvnhng.mockproject.Exception.NotFoundExcep;
 import com.thvnhng.mockproject.Repository.CourseRepository;
+import com.thvnhng.mockproject.Repository.RoleRepository;
 import com.thvnhng.mockproject.Repository.UserRepository;
 import com.thvnhng.mockproject.Service.CourseService;
-import com.thvnhng.mockproject.constant.SystemConstant;
+import com.thvnhng.mockproject.Service.UserService;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +29,8 @@ public class CourseServiceImpl implements CourseService {
 
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final UserService userService;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -39,14 +49,42 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
+    public List<UserDTO> listStudent(Long id, Pageable pageable) {
+        if (courseRepository.findById(id).isPresent()) {
+            List<Users> usersList = userRepository.findAllByCoursesListContainingAndRolesListContaining(
+                    courseRepository.getById(id),
+                    roleRepository.findByRoleName(ERoles.ROLE_STUDENT),
+                    pageable
+            );
+//            List<Users> usersList = courseRepository.findById(id).get().getUsersList();
+            List<UserDTO> userDTOList = new ArrayList<>();
+            userService.convertLists(usersList, userDTOList);
+            return userDTOList;
+        }
+        return null;
+    }
+
+    @Override
     public CourseDTO detail(Long id) {
-        return objectMapper.convertValue(courseRepository.findById(id), CourseDTO.class);
+        if (courseRepository.findById(id).isPresent()) {
+            Courses course = courseRepository.findById(id).get();
+            List<String> strUserList = new ArrayList<>();
+            List<String> strReportList = new ArrayList<>();
+            convertToDTO(strUserList, course.getUsersList());
+            convertToDTO(strReportList, course.getReportsList());
+            course.setUsersList(null);
+            course.setReportsList(null);
+            CourseDTO courseDTO = objectMapper.convertValue(course, CourseDTO.class);
+            courseDTO.setUsersList(strUserList);
+            courseDTO.setReportsList(strReportList);
+            return courseDTO;
+        }
+        return null;
     }
 
     @Override
     public CourseDTO create(CourseDTO courseDTO) {
         Courses course = objectMapper.convertValue(courseDTO, Courses.class);
-        course.setStatus(SystemConstant.ACTIVE_STATUS);
         course.setUsersList(userRepository.findAllByUsernameIn(courseDTO.getUsersList()));
         courseRepository.save(course);
         return courseDTO;
@@ -66,11 +104,23 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public void setStatus(Long id, Integer status) {
+    public void setDelete(Long id,String deletedBy, LocalDateTime deletedAt) {
         Optional<Courses> coursesOptional = courseRepository.findById(id);
         if (coursesOptional.isPresent()) {
-            coursesOptional.get().setStatus(status);
+            coursesOptional.get().setDeletedBy(deletedBy);
+            coursesOptional.get().setDeletedAt(deletedAt);
             courseRepository.save(coursesOptional.get());
+        }
+    }
+
+    @Override
+    public void convertToDTO(List<String> stringList, List<?> entityList) {
+        for (Object obj : entityList) {
+            if (obj instanceof Users) {
+                stringList.add(((Users) obj).getUsername());
+            } else if (obj instanceof Reports) {
+                stringList.add(((Reports) obj).getReportName());
+            }
         }
     }
 

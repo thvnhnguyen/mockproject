@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -22,7 +23,7 @@ public class UserExportExcelModel extends BaseExportExcelModel{
     private String contactNumber;
     private String address;
     private Date birthDate;
-    private Integer status;
+    private LocalDateTime deletedAt;
 
     @Override
     public List<MetadataExcelModel> getListMetadata() {
@@ -35,7 +36,7 @@ public class UserExportExcelModel extends BaseExportExcelModel{
                 new MetadataExcelModel(6, "contactNumber", String.class, "Số liên lạc"),
                 new MetadataExcelModel(7, "address", String.class, "Địa chỉ"),
                 new MetadataExcelModel(8, "birthDate", Date.class, "Ngày sinh"),
-                new MetadataExcelModel(9, "status", Integer.class, "Trạng thái")
+                new MetadataExcelModel(9, "deletedAt", LocalDateTime.class, "Đã xóa tại")
         );
     }
 

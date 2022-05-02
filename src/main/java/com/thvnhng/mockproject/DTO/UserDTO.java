@@ -14,6 +14,8 @@ public class UserDTO {
     private String modifiedBy;
     private LocalDateTime createDate;
     private LocalDateTime lastModifiedDate;
+    protected String deletedBy;
+    protected LocalDateTime deletedAt;
     private String username;
     private String password;
     private String firstName;
@@ -23,7 +25,6 @@ public class UserDTO {
     private String contactNumber;
     private String address;
     private Date birthDate;
-    private Integer status;
     private List<String> roleList;
     private List<String> coursesList;
     private List<String> reportsList;

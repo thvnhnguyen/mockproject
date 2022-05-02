@@ -8,6 +8,5 @@ import com.thvnhng.mockproject.payload.response.JwtResponse;
 public interface AuthService {
 
     JwtResponse signIn(LoginRequest loginRequest);
-    UserDTO signUp(SignUpRequest signUpRequest);
 
 }

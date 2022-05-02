@@ -8,13 +8,18 @@ import java.time.LocalDateTime;
 public class ReportDTO {
 
     private Long id;
+    private String username;
+    private String courseName;
+    private String subjectName;
+    private String reportName;
+    private Integer mark15m;
+    private Integer mark45m;
+    private Integer markFinal;
+    private Double markSummary;
     private String createBy;
     private String modifiedBy;
     private LocalDateTime createDate;
     private LocalDateTime lastModifiedDate;
-    private Double studentMark;
-    private UserDTO user;
-    private CourseDTO course;
-    private SubjectDTO subject;
-
+    protected String deletedBy;
+    protected LocalDateTime deletedAt;
 }

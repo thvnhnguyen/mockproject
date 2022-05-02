@@ -1,6 +1,8 @@
 package com.thvnhng.mockproject.Entity;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -10,7 +12,9 @@ import java.util.List;
 
 @Entity
 @Table(name = "subjects")
-@Data
+//@Data
+@Getter
+@Setter
 public class Subjects extends AbstractEntity{
 
     @Column(name = "subject_name")

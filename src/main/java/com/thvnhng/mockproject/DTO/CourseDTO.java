@@ -15,6 +15,8 @@ public class CourseDTO {
     private String modifiedBy;
     private LocalDateTime createDate;
     private LocalDateTime lastModifiedDate;
+    protected String deletedBy;
+    protected LocalDateTime deletedAt;
     private String courseName;
     private Integer schoolYear;
     private Integer status;

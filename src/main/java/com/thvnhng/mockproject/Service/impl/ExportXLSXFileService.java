@@ -17,6 +17,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,7 +30,7 @@ public class ExportXLSXFileService implements ExportExcelFileService {
     public File exportFile(String fileName, String sheetName, List<BaseExportExcelModel> dataExport, Class<? extends BaseExportExcelModel> classType) {
         File excelFile = null;
         try {
-            Path pathExcelFile = Files.createTempFile(fileName, ".xlsx");
+            Path pathExcelFile = Files.createTempFile(Paths.get("D:\\NTQ Fresher\\rsExcel"), fileName, ".xlsx");
             excelFile = pathExcelFile.toFile();
 
             POIXMLDocument workbook = exportExcel(dataExport, classType, sheetName);

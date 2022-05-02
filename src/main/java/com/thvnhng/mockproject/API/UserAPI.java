@@ -6,13 +6,16 @@ import com.thvnhng.mockproject.ExcelModel.UserExportExcelModel;
 import com.thvnhng.mockproject.Exception.NotFoundExcep;
 import com.thvnhng.mockproject.Service.ExportExcelFileService;
 import com.thvnhng.mockproject.Service.UserService;
-import com.thvnhng.mockproject.constant.SystemConstant;
 import com.thvnhng.mockproject.payload.response.MessageResponse;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,16 +28,37 @@ public class UserAPI {
     private final ExportExcelFileService exportExcelFileService;
 
     @GetMapping("/all")
-    public List<UserDTO> list() {
-        return userService.listALl();
+    public List<UserDTO> listAll(
+            @RequestParam(value = "sortBy", required = false) String sortBy,
+            @RequestParam(value = "order", required = false) String order,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "5") int size
+    ) {
+        if (size > 100) {
+            size = 100;
+        }
+        int totalPage = (int) Math.ceil((double) userService.getTotalItem() / size);
+        if (page > totalPage) {
+            throw new NotFoundExcep("Number of page not exist", new Throwable());
+        }
+        if ("asc".equals(order)) {
+            Pageable pageWithLimitAndSort = PageRequest.of(page, size, Sort.by(sortBy).ascending());
+            return userService.listALl(pageWithLimitAndSort);
+        } else {
+            if ("desc".equals(order)) {
+                Pageable pageWithLimitAndSort = PageRequest.of(page, size, Sort.by(sortBy).descending());
+                return userService.listALl(pageWithLimitAndSort);
+            }
+        }
+        return null;
     }
 
-    @GetMapping("")
-    public List<UserDTO> listByStatus(@RequestParam(name = "status") Integer status) {
+    @GetMapping("/bin")
+    public List<UserDTO> listDeleted() {
         try{
-            return userService.listUserByStatus(status);
+            return userService.listUserDeleted();
         } catch (Exception ex) {
-            throw new NotFoundExcep("Not found status = " + status, ex);
+            throw new NotFoundExcep("Not found user deleted ", ex);
         }
     }
 
@@ -65,7 +89,7 @@ public class UserAPI {
         }
         userService.updateUserInfo(userDTO);
         userService.updateUserRoles(userDTO);
-        userService.setStatus(userDTO.getId(), userDTO.getStatus());
+        userService.setDelete(userDTO.getId(), userDTO.getDeletedBy(), userDTO.getDeletedAt());
         return ResponseEntity.ok().body("Updated");
     }
 
@@ -75,7 +99,7 @@ public class UserAPI {
         if (!userService.checkExistId(id)) {
             return ResponseEntity.badRequest().body(new MessageResponse("No user be found with id = " + id));
         }
-        userService.setStatus(id, SystemConstant.ACTIVE_STATUS);
+        userService.setDelete(id, null, null);
         return ResponseEntity.ok().body(new MessageResponse("User activated"));
     }
 
@@ -85,7 +109,7 @@ public class UserAPI {
         if (!userService.checkExistId(id)) {
             return ResponseEntity.badRequest().body(new MessageResponse("No user be found with id = " + id));
         }
-        userService.setStatus(id, SystemConstant.INACTIVE_STATUS);
+        userService.setDelete(id, "No Name", LocalDateTime.now());
         return ResponseEntity.ok().body(new MessageResponse("User inactivated"));
     }
 
@@ -105,7 +129,7 @@ public class UserAPI {
                     userDTO.getContactNumber(),
                     userDTO.getAddress(),
                     userDTO.getBirthDate(),
-                    userDTO.getStatus()));
+                    userDTO.getDeletedAt()));
         }
         exportExcelFileService.exportFile("DSUser", "userList", metaList, UserExportExcelModel.class);
         return ResponseEntity.ok().body(new MessageResponse("Success"));

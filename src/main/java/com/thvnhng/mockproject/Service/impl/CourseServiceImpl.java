@@ -104,6 +104,28 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
+    public void saveMainTeacher(Long id, UserDTO userDTO) {
+        if (courseRepository.findById(id).isPresent()) {
+            Users user = userRepository.getById(userDTO.getId());
+            user.getRolesList().add(roleRepository.findByRoleName(ERoles.ROLE_MAIN_TEACHER));
+            user = userRepository.save(user);
+            Courses course = courseRepository.findById(id).get();
+            course.getUsersList().add(user);
+            courseRepository.save(course);
+        }
+    }
+
+    @Override
+    public void saveSubjectTeacher(Long courseId, Long userId) {
+        if (courseRepository.findById(courseId).isPresent()) {
+            Users user = userRepository.getById(userId);
+            Courses course = courseRepository.getById(courseId);
+            course.getUsersList().add(user);
+            courseRepository.save(course);
+        }
+    }
+
+    @Override
     public void setDelete(Long id,String deletedBy, LocalDateTime deletedAt) {
         Optional<Courses> coursesOptional = courseRepository.findById(id);
         if (coursesOptional.isPresent()) {

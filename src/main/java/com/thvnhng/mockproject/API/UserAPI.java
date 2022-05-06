@@ -13,6 +13,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -28,7 +30,7 @@ public class UserAPI {
     private final ExportExcelFileService exportExcelFileService;
 
     @GetMapping("/all")
-    public List<UserDTO> listAll(
+    public ResponseEntity<?> listAll(
             @RequestParam(value = "sortBy", required = false) String sortBy,
             @RequestParam(value = "order", required = false) String order,
             @RequestParam(value = "page", defaultValue = "0") int page,
@@ -39,36 +41,46 @@ public class UserAPI {
         }
         int totalPage = (int) Math.ceil((double) userService.getTotalItem() / size);
         if (page > totalPage) {
-            throw new NotFoundExcep("Number of page not exist", new Throwable());
+            return ResponseEntity.badRequest().body(new MessageResponse("Number of page not exist"));
         }
         if ("asc".equals(order)) {
             Pageable pageWithLimitAndSort = PageRequest.of(page, size, Sort.by(sortBy).ascending());
-            return userService.listALl(pageWithLimitAndSort);
+            return ResponseEntity.ok().body(userService.listALl(pageWithLimitAndSort));
         } else {
             if ("desc".equals(order)) {
                 Pageable pageWithLimitAndSort = PageRequest.of(page, size, Sort.by(sortBy).descending());
-                return userService.listALl(pageWithLimitAndSort);
+                return ResponseEntity.ok().body(userService.listALl(pageWithLimitAndSort));
             }
         }
         return null;
     }
 
     @GetMapping("/bin")
-    public List<UserDTO> listDeleted() {
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> listDeleted() {
         try{
-            return userService.listUserDeleted();
+            return ResponseEntity.ok().body(userService.listUserDeleted());
         } catch (Exception ex) {
-            throw new NotFoundExcep("Not found user deleted ", ex);
+            return ResponseEntity.badRequest().body("Not found");
         }
     }
 
-    @GetMapping("/{id}")
-    public UserDTO detail(@PathVariable(name = "id") Long id) {
-        try{
-            return userService.detail(id);
-        } catch (Exception ex) {
-            throw new NotFoundExcep("Not found user with id = " + id, ex);
+//    Profile page (has any role)
+    @GetMapping("/{username}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> profile(@PathVariable(name = "username") String username) {
+        String checkUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        if (checkUsername.equals(username)) {
+            return ResponseEntity.ok().body(userService.detail(username));
         }
+        return ResponseEntity.badRequest().body(new MessageResponse("404 Not Found"));
+    }
+
+//    Detail page ()
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_MAIN_TEACHER','ROLE_SUBJECT_TEACHER')")
+    public ResponseEntity<?> detail(@PathVariable(name = "id") Long id) {
+        return null;
     }
 
     @PutMapping("")
@@ -90,7 +102,7 @@ public class UserAPI {
         userService.updateUserInfo(userDTO);
         userService.updateUserRoles(userDTO);
         userService.setDelete(userDTO.getId(), userDTO.getDeletedBy(), userDTO.getDeletedAt());
-        return ResponseEntity.ok().body("Updated");
+        return ResponseEntity.ok().body(new MessageResponse("Updated User !"));
     }
 
     @PutMapping("/{id}")

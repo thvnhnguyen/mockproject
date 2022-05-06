@@ -63,8 +63,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO detail(Long id) {
-        return objectMapper.convertValue(userRepository.findById(id), UserDTO.class);
+    public UserDTO detail(String username) {
+        return objectMapper.convertValue(userRepository.findByUsername(username), UserDTO.class);
+
     }
 
     @Override
@@ -129,6 +130,10 @@ public class UserServiceImpl implements UserService {
                 eRolesList.add(ERoles.ROLE_ADMIN);
             } else if (strRole.equals(ERoles.ROLE_STUDENT.name())) {
                 eRolesList.add(ERoles.ROLE_STUDENT);
+            } else if (strRole.equals(ERoles.ROLE_MAIN_TEACHER.name())) {
+                eRolesList.add(ERoles.ROLE_MAIN_TEACHER);
+            } else if (strRole.equals(ERoles.ROLE_SUBJECT_TEACHER.name())) {
+                eRolesList.add(ERoles.ROLE_SUBJECT_TEACHER);
             }
         }
     }

@@ -15,6 +15,8 @@ public interface CourseService {
     CourseDTO detail(Long id);
     CourseDTO create(CourseDTO courseDTO);
     CourseDTO update(CourseDTO courseDTO);
+    void saveMainTeacher(Long id, UserDTO userDTO);
+    void saveSubjectTeacher(Long courseId, Long userId);
     void setDelete(Long id,String deletedBy, LocalDateTime deletedAt);
     void convertToDTO(List<String> stringList, List<?> entityList);
 }

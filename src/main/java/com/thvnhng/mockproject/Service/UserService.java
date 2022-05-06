@@ -17,7 +17,7 @@ public interface UserService {
     Boolean checkExistEmail(String email);
     int getTotalItem();
     void signUp(SignUpRequest signUpRequest);
-    UserDTO detail(Long id);
+    UserDTO detail(String username);
     UserDTO updateUserInfo(UserDTO userDTO);
     void updateUserRoles(UserDTO userDTO);
     void setDelete(Long id,String deletedBy, LocalDateTime deletedAt);

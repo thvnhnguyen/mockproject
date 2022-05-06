@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 
 @RestController(value = "authenticationAPI")
 @RequestMapping("/api/auth")
@@ -33,38 +35,38 @@ public class AuthAPI {
 
     @PostMapping("/signup")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<?> registerUser(@RequestBody SignUpRequest signUpRequest) {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
 
-        if (signUpRequest.getUsername().trim().length() < 7) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Minimum username length is 7"));
-        }
-        if (signUpRequest.getPassword().trim().length() < 6 || signUpRequest.getPassword().trim().length() > 25) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Password contains between 6 and 25 characters"));
-        }
-        if (signUpRequest.getEmail().trim().length() < 10) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Invalid email"));
-        }
-        if (userService.checkExistUsername(signUpRequest.getUsername())) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: Username is already taken!"));
-        }
-        if (userService.checkExistEmail(signUpRequest.getEmail())) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: Email is already in use!"));
-        }
-        if (signUpRequest.getRoleList().size() == 0) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: No roles are specified"));
-        }
+//        if (signUpRequest.getUsername().trim().length() < 7) {
+//            return ResponseEntity
+//                    .badRequest()
+//                    .body(new MessageResponse("Minimum username length is 7"));
+//        }
+//        if (signUpRequest.getPassword().trim().length() < 6 || signUpRequest.getPassword().trim().length() > 25) {
+//            return ResponseEntity
+//                    .badRequest()
+//                    .body(new MessageResponse("Password contains between 6 and 25 characters"));
+//        }
+//        if (signUpRequest.getEmail().trim().length() < 10) {
+//            return ResponseEntity
+//                    .badRequest()
+//                    .body(new MessageResponse("Invalid email"));
+//        }
+//        if (userService.checkExistUsername(signUpRequest.getUsername())) {
+//            return ResponseEntity
+//                    .badRequest()
+//                    .body(new MessageResponse("Error: Username is already taken!"));
+//        }
+//        if (userService.checkExistEmail(signUpRequest.getEmail())) {
+//            return ResponseEntity
+//                    .badRequest()
+//                    .body(new MessageResponse("Error: Email is already in use!"));
+//        }
+//        if (signUpRequest.getRoleList().size() == 0) {
+//            return ResponseEntity
+//                    .badRequest()
+//                    .body(new MessageResponse("Error: No roles are specified"));
+//        }
         userService.signUp(signUpRequest);
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
 

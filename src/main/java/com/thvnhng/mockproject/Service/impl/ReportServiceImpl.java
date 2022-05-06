@@ -2,7 +2,9 @@ package com.thvnhng.mockproject.Service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thvnhng.mockproject.DTO.ReportDTO;
+import com.thvnhng.mockproject.Entity.Courses;
 import com.thvnhng.mockproject.Entity.Reports;
+import com.thvnhng.mockproject.Entity.Subjects;
 import com.thvnhng.mockproject.Entity.Users;
 import com.thvnhng.mockproject.Repository.CourseRepository;
 import com.thvnhng.mockproject.Repository.ReportRepository;
@@ -76,15 +78,34 @@ public class ReportServiceImpl implements ReportService {
         report.setUser(userRepository.findByUsername(username));
         report.setCourse(courseRepository.findByCourseName(courseName));
         report.setSubject(subjectRepository.findBySubjectName(subjectName));
-        report.setMarkSummary(markHandle(reportDTO.getMark15m(), reportDTO.getMark45m(), report.getMarkFinal()));
+        report.setMarkSummary(markHandle(reportDTO.getMark15m(), reportDTO.getMark45m(), reportDTO.getMarkFinal()));
         reportRepository.save(report);
         return reportDTO;
     }
 
-    public void update(ReportDTO reportDTO) {
+    public void update(ReportDTO reportDTO, String username) {
+        Reports report = reportRepository.getById(reportDTO.getId());
+        report.setMark15m(reportDTO.getMark15m());
+        report.setMark45m(reportDTO.getMark45m());
+        report.setMarkFinal(reportDTO.getMarkFinal());
+        report.setMarkSummary(markHandle(reportDTO.getMark15m(), reportDTO.getMark45m(), reportDTO.getMarkFinal()));
+        reportRepository.save(report);
     }
 
+
     public void setDelete(Long id, String deletedBy, LocalDateTime deletedAt) {
+    }
+
+    //    Check teacher co dung lop va dung mon hay k
+    @Override
+    public boolean validTeacher(ReportDTO reportDTO, String username) {
+        Users teacher = userRepository.findByUsername(username);
+        List<Courses> teacherCourse = teacher.getCoursesList();
+        Reports report = reportRepository.getById(reportDTO.getId());
+        Courses course = report.getCourse();
+        Subjects studentSubject = report.getSubject();
+        Subjects teacherSubject = teacher.getSubject_user();
+        return teacherCourse.contains(course) && studentSubject.equals(teacherSubject);
     }
 
     public List<Reports> convertReportList(List<String> strReportList) {

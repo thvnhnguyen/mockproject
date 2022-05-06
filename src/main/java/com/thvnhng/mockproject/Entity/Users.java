@@ -65,6 +65,10 @@ public class Users extends AbstractEntity{
     @OneToMany(mappedBy = "user")
     private List<Reports> reportsList;
 
+    @ManyToOne
+    @JoinColumn(name = "subject_id")
+    private Subjects subject_user;
+
 //    @Override
 //    public String toString() {
 //        return ToStringBuilder.reflectionToString(this);

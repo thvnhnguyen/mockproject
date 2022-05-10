@@ -20,9 +20,9 @@ public class Subjects extends AbstractEntity{
     private String subjectName;
 
     @OneToMany(mappedBy = "subject")
-    private List<Reports> reportsList;
+    private List<Scores> scoresList;
 
-    @OneToMany(mappedBy = "subject_user")
+    @OneToMany(mappedBy = "subjectUser")
     private List<Users> usersList;
 
 }

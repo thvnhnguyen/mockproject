@@ -6,6 +6,8 @@ import com.thvnhng.mockproject.Entity.Users;
 import com.thvnhng.mockproject.payload.request.SignUpRequest;
 import org.springframework.data.domain.Pageable;
 
+import javax.mail.MessagingException;
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -17,14 +19,22 @@ public interface UserService {
     Boolean checkExistEmail(String email);
     int getTotalItem();
     void signUp(SignUpRequest signUpRequest);
-    UserDTO detail(String username);
+    UserDTO detailById(Long id);
+    UserDTO detailByUsername(String username);
+    Users detail(String username);
     UserDTO updateUserInfo(UserDTO userDTO);
     void updateUserRoles(UserDTO userDTO);
     void setDelete(Long id,String deletedBy, LocalDateTime deletedAt);
     List<UserDTO> listALl();
     List<UserDTO> listALl(Pageable pageable);
     List<UserDTO> listUserDeleted();
+    String getEncodedPassword(String username);
     void validUserRoleList(List<String> strRoles, List<ERoles> eRolesList);
-    void convertLists(List<Users> usersList, List<UserDTO> userDTOList);
+    void changePassword(String username, String newPassword);
+    UserDTO convertListsToDTO(Users user);
+    void generateOneTimePassword(Users user) throws UnsupportedEncodingException, MessagingException;
+    void sendOTPEmail(Users user, String OTP) throws UnsupportedEncodingException, MessagingException;
+    void clearOTP(Users user);
+    void saveMainTeacher(String courseName, UserDTO userDTO);
 
 }

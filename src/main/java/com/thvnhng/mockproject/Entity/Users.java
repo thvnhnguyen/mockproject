@@ -1,6 +1,6 @@
 package com.thvnhng.mockproject.Entity;
 
-import lombok.Data;
+import com.thvnhng.mockproject.constant.SystemConstant;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -44,14 +44,37 @@ public class Users extends AbstractEntity{
     @Column(name = "birth_date")
     private Date birthDate;
 
-    @Transient
-    public String getName() {
-        StringBuilder name = new StringBuilder();
+    @Column(name = "one_time_password")
+    private String oneTimePassword;
 
+    @Column(name = "otp_requested_time")
+    private Date otpRequestedTime;
+
+    @Column(name = "course_name_permit")
+    private String courseNamePermit;
+
+    public boolean isOTPRequired() {
+        if (this.getOneTimePassword() == null) {
+            return false;
+        }
+
+        long currentTimeInMillis = System.currentTimeMillis();
+        long otpRequestedTimeInMillis = this.otpRequestedTime.getTime();
+
+        if (otpRequestedTimeInMillis + SystemConstant.OTP_VALID_DURATION < currentTimeInMillis) {
+            // OTP expires
+            return false;
+        }
+
+        return true;
+    }
+
+    @Transient
+    public String getFullName() {
+        StringBuilder name = new StringBuilder();
         name.append(firstName);
         name.append(" ");
         name.append(lastName);
-
         return name.toString();
     }
 
@@ -63,27 +86,52 @@ public class Users extends AbstractEntity{
     private List<Courses> coursesList;
 
     @OneToMany(mappedBy = "user")
-    private List<Reports> reportsList;
+    private List<Scores> scoresList;
 
     @ManyToOne
     @JoinColumn(name = "subject_id")
-    private Subjects subject_user;
+    private Subjects subjectUser;
 
-//    @Override
-//    public String toString() {
-//        return ToStringBuilder.reflectionToString(this);
-//    }
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this);
+    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Users users = (Users) o;
-        return Objects.equals(username, users.username) && Objects.equals(password, users.password) && Objects.equals(firstName, users.firstName) && Objects.equals(lastName, users.lastName) && Objects.equals(email, users.email) && Objects.equals(gender, users.gender) && Objects.equals(contactNumber, users.contactNumber) && Objects.equals(address, users.address) && Objects.equals(birthDate, users.birthDate) && Objects.equals(rolesList, users.rolesList) && Objects.equals(coursesList, users.coursesList) && Objects.equals(reportsList, users.reportsList);
+        return Objects.equals(username, users.username)
+                && Objects.equals(password, users.password)
+                && Objects.equals(firstName, users.firstName)
+                && Objects.equals(lastName, users.lastName)
+                && Objects.equals(email, users.email)
+                && Objects.equals(gender, users.gender)
+                && Objects.equals(contactNumber, users.contactNumber)
+                && Objects.equals(address, users.address)
+                && Objects.equals(birthDate, users.birthDate)
+                && Objects.equals(rolesList, users.rolesList)
+                && Objects.equals(coursesList, users.coursesList)
+                && Objects.equals(scoresList, users.scoresList);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(username, password, firstName, lastName, email, gender, contactNumber, address, birthDate, rolesList, coursesList, reportsList);
+        return Objects.hash(
+                username,
+                password,
+                firstName,
+                lastName,
+                email,
+                gender,
+                contactNumber,
+                address,
+                birthDate,
+                oneTimePassword,
+                otpRequestedTime,
+                rolesList,
+                coursesList,
+                scoresList);
     }
 }

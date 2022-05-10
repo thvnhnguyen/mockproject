@@ -2,7 +2,8 @@ package com.thvnhng.mockproject.Service;
 
 import com.thvnhng.mockproject.DTO.CourseDTO;
 import com.thvnhng.mockproject.DTO.UserDTO;
-import org.springframework.data.domain.Pageable;
+import com.thvnhng.mockproject.Entity.Courses;
+import org.springframework.data.domain.Sort;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -10,13 +11,18 @@ import java.util.List;
 public interface CourseService {
 
     Boolean checkExistId(Long id);
-    List<CourseDTO> listAll();
-    List<UserDTO> listStudent(Long id, Pageable pageable);
+    Boolean checkExistMainTeacher(String courseName, Sort sort);
+    Boolean checkExistSubjectTeacher(String courseName, Long userId);
+    Boolean isExistCourse(String courseName);
+    List<CourseDTO> listAll(Sort sort);
+    List<UserDTO> listStudent(Long id, Sort sort);
+    List<UserDTO> listTeacher(Long id, Sort sort);
     CourseDTO detail(Long id);
+    CourseDTO detailByCourseName(String courseName);
     CourseDTO create(CourseDTO courseDTO);
     CourseDTO update(CourseDTO courseDTO);
-    void saveMainTeacher(Long id, UserDTO userDTO);
-    void saveSubjectTeacher(Long courseId, Long userId);
+    void saveMainTeacher(String courseName, UserDTO userDTO);
+    void saveSubjectTeacher(String courseName, Long userId);
     void setDelete(Long id,String deletedBy, LocalDateTime deletedAt);
-    void convertToDTO(List<String> stringList, List<?> entityList);
+    CourseDTO convertToDTO(Courses course);
 }

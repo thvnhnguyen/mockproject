@@ -2,9 +2,9 @@ package com.thvnhng.mockproject.Service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thvnhng.mockproject.DTO.SubjectDTO;
-import com.thvnhng.mockproject.Entity.Reports;
+import com.thvnhng.mockproject.Entity.Scores;
 import com.thvnhng.mockproject.Entity.Subjects;
-import com.thvnhng.mockproject.Repository.ReportRepository;
+import com.thvnhng.mockproject.Repository.ScoreRepository;
 import com.thvnhng.mockproject.Repository.SubjectRepository;
 import com.thvnhng.mockproject.Service.SubjectService;
 import lombok.AllArgsConstructor;
@@ -19,7 +19,7 @@ import java.util.List;
 public class SubjectServiceImpl implements SubjectService{
 
     private final SubjectRepository subjectRepository;
-    private final ReportRepository reportRepository;
+    private final ScoreRepository scoreRepository;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -63,7 +63,7 @@ public class SubjectServiceImpl implements SubjectService{
     }
 
     @Override
-    public List<Reports> convertReportList(List<String> strReportList) {
+    public List<Scores> convertReportList(List<String> strReportList) {
 //        List<Reports> reportsList = re
         return null;
     }

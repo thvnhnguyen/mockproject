@@ -1,8 +1,8 @@
 package com.thvnhng.mockproject.DTO;
 
-import com.thvnhng.mockproject.Entity.Reports;
 import lombok.Data;
 
+import javax.validation.constraints.NotEmpty;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -16,6 +16,7 @@ public class SubjectDTO {
     private LocalDateTime lastModifiedDate;
     protected String deletedBy;
     protected LocalDateTime deletedAt;
+    @NotEmpty(message = "Name of role cannot be empty")
     private String subjectName;
     private List<String> reportsList;
 

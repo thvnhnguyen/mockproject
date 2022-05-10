@@ -2,24 +2,24 @@ package com.thvnhng.mockproject.DTO;
 
 import lombok.Data;
 
+import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
 @Data
-public class ReportDTO {
+public class ScoreDTO {
 
     private Long id;
     private String username;
     private String courseName;
     private String subjectName;
-    private String reportName;
-    private Integer mark15m;
-    private Integer mark45m;
-    private Integer markFinal;
-    private Double markSummary;
+    private String scoreName;
+    @Size(min = 0, max = 10, message = "Score between 0 and 100")
+    private Double score;
+    private String scoreType;
     private String createBy;
     private String modifiedBy;
     private LocalDateTime createDate;
     private LocalDateTime lastModifiedDate;
-    protected String deletedBy;
-    protected LocalDateTime deletedAt;
+    private String deletedBy;
+    private LocalDateTime deletedAt;
 }

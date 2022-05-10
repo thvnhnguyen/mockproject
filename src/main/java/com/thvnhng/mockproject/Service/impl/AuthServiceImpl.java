@@ -32,10 +32,6 @@ public class AuthServiceImpl implements AuthService {
 
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
-    private final PasswordEncoder encoder;
-    private final ObjectMapper objectMapper;
-    private final RoleRepository roleRepository;
-    private final UserRepository userRepository;
 
     @Override
     public JwtResponse signIn(LoginRequest loginRequest) {

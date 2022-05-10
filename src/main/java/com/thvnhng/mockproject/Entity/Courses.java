@@ -1,6 +1,5 @@
 package com.thvnhng.mockproject.Entity;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,6 +24,6 @@ public class Courses extends AbstractEntity{
     private List<Users> usersList;
 
     @OneToMany(mappedBy = "course")
-    private List<Reports> reportsList;
+    private List<Scores> scoresList;
 
 }

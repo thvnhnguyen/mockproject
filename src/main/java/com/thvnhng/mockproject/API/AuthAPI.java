@@ -2,12 +2,14 @@ package com.thvnhng.mockproject.API;
 
 import com.thvnhng.mockproject.Service.AuthService;
 import com.thvnhng.mockproject.Service.UserService;
+import com.thvnhng.mockproject.Valid.RegexString;
 import com.thvnhng.mockproject.payload.request.LoginRequest;
 import com.thvnhng.mockproject.payload.request.SignUpRequest;
 import com.thvnhng.mockproject.payload.response.MessageResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,12 +25,25 @@ public class AuthAPI {
 
     private final AuthService authService;
     private final UserService userService;
+    private final PasswordEncoder encoder;
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
-
-        if (!userService.checkExistUsername(loginRequest.getUsername())) {
+        String username = loginRequest.getUsername();
+        if (!username.matches(RegexString.USERNAME_PATTERN)) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse(
+                            "Username is not valid," +
+                                    " username contains only letters, numbers and '_' ," +
+                                    " username must start with a letter and be between 7 and 30 characters long"));
+        }
+        if (!userService.checkExistUsername(username)) {
             return ResponseEntity.ok().body(new MessageResponse("Username does not exist"));
+        }
+        String encodedCurrentPassword = userService.getEncodedPassword(username);
+        if (!encoder.matches(loginRequest.getPassword(), encodedCurrentPassword)) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Password is not valid"));
         }
         return ResponseEntity.ok(authService.signIn(loginRequest));
     }
@@ -36,37 +51,15 @@ public class AuthAPI {
     @PostMapping("/signup")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
-
-//        if (signUpRequest.getUsername().trim().length() < 7) {
-//            return ResponseEntity
-//                    .badRequest()
-//                    .body(new MessageResponse("Minimum username length is 7"));
-//        }
-//        if (signUpRequest.getPassword().trim().length() < 6 || signUpRequest.getPassword().trim().length() > 25) {
-//            return ResponseEntity
-//                    .badRequest()
-//                    .body(new MessageResponse("Password contains between 6 and 25 characters"));
-//        }
-//        if (signUpRequest.getEmail().trim().length() < 10) {
-//            return ResponseEntity
-//                    .badRequest()
-//                    .body(new MessageResponse("Invalid email"));
-//        }
-//        if (userService.checkExistUsername(signUpRequest.getUsername())) {
-//            return ResponseEntity
-//                    .badRequest()
-//                    .body(new MessageResponse("Error: Username is already taken!"));
-//        }
-//        if (userService.checkExistEmail(signUpRequest.getEmail())) {
-//            return ResponseEntity
-//                    .badRequest()
-//                    .body(new MessageResponse("Error: Email is already in use!"));
-//        }
-//        if (signUpRequest.getRoleList().size() == 0) {
-//            return ResponseEntity
-//                    .badRequest()
-//                    .body(new MessageResponse("Error: No roles are specified"));
-//        }
+        String username = signUpRequest.getUsername();
+        if (!username.matches(RegexString.USERNAME_PATTERN)) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse(
+                            "Username is not valid," +
+                                    " username contains only letters, numbers and '_' ," +
+                                    " username must start with a letter and be between 7 and 30 characters long"));
+        }
         userService.signUp(signUpRequest);
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
 

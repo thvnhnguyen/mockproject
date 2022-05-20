@@ -12,7 +12,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CheckEmail {
 
-    String message() default "Email must contain '@gmail.com'";
+    String message() default "Email is already exist";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 

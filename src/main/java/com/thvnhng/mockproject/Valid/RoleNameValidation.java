@@ -1,18 +1,20 @@
 package com.thvnhng.mockproject.Valid;
 
-import com.thvnhng.mockproject.Service.UserService;
-import com.thvnhng.mockproject.Valid.Annotation.CheckEmail;
+import com.thvnhng.mockproject.Service.RoleService;
+import com.thvnhng.mockproject.Valid.Annotation.ExistRoleName;
 import lombok.AllArgsConstructor;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
 @AllArgsConstructor
-public class EmailValidation implements ConstraintValidator<CheckEmail, String> {
+public class RoleNameValidation implements ConstraintValidator<ExistRoleName, String> {
 
-    private final UserService userService;
+    private final RoleService roleService;
+
     @Override
     public boolean isValid(String s, ConstraintValidatorContext constraintValidatorContext) {
-        return !userService.checkExistEmail(s);
+        return roleService.isExistByRoleName(s);
     }
+
 }

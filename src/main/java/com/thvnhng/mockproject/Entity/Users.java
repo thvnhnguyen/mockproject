@@ -33,7 +33,7 @@ public class Users extends AbstractEntity{
     private String email;
 
     @Column(name = "gender")
-    private Character gender;
+    private String gender;
 
     @Column(name = "contact_number")
     private String contactNumber;

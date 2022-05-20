@@ -3,10 +3,7 @@ package com.thvnhng.mockproject.Entity;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.List;
 
 @Entity
@@ -19,10 +16,10 @@ public class Subjects extends AbstractEntity{
     @Column(name = "subject_name")
     private String subjectName;
 
-    @OneToMany(mappedBy = "subject")
+    @OneToMany(mappedBy = "subject", fetch = FetchType.LAZY)
     private List<Scores> scoresList;
 
-    @OneToMany(mappedBy = "subjectUser")
+    @OneToMany(mappedBy = "subjectUser", fetch = FetchType.LAZY)
     private List<Users> usersList;
 
 }

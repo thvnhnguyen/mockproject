@@ -15,11 +15,10 @@ import java.util.List;
 public class UserExportExcelModel extends BaseExportExcelModel{
 
     private String username;
-    private String password;
     private String firstName;
     private String lastName;
     private String email;
-    private Character gender;
+    private String gender;
     private String contactNumber;
     private String address;
     private Date birthDate;

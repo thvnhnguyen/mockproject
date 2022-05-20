@@ -8,11 +8,12 @@ import java.util.List;
 
 public interface SubjectService {
 
+    Boolean isExistSubjectName(String subjectName);
     List<SubjectDTO> listAll();
-    SubjectDTO detail(Long id);
+    SubjectDTO detail(Long subjectId);
     SubjectDTO create(SubjectDTO subjectDTO);
     void update(SubjectDTO subjectDTO);
     void setDelete(Long id, String deletedBy, LocalDateTime deletedAt);
-    List<Scores> convertReportList(List<String> strReportList);
+    List<Scores> convertScoreList(List<String> strReportList);
 
 }

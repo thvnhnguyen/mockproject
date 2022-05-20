@@ -1,5 +1,6 @@
 package com.thvnhng.mockproject.Service;
 
+import com.thvnhng.mockproject.DTO.ProfileDTO;
 import com.thvnhng.mockproject.DTO.UserDTO;
 import com.thvnhng.mockproject.Entity.ERoles;
 import com.thvnhng.mockproject.Entity.Users;
@@ -17,12 +18,13 @@ public interface UserService {
     Boolean checkExistId(Long id);
     Boolean checkExistUsername(String username);
     Boolean checkExistEmail(String email);
+    Boolean isStudentIsFree(Long userId);
     int getTotalItem();
     void signUp(SignUpRequest signUpRequest);
     UserDTO detailById(Long id);
     UserDTO detailByUsername(String username);
-    Users detail(String username);
-    UserDTO updateUserInfo(UserDTO userDTO);
+    ProfileDTO profile(String username);
+    void updateProfile(ProfileDTO profileDTO);
     void updateUserRoles(UserDTO userDTO);
     void setDelete(Long id,String deletedBy, LocalDateTime deletedAt);
     List<UserDTO> listALl();
@@ -35,6 +37,5 @@ public interface UserService {
     void generateOneTimePassword(Users user) throws UnsupportedEncodingException, MessagingException;
     void sendOTPEmail(Users user, String OTP) throws UnsupportedEncodingException, MessagingException;
     void clearOTP(Users user);
-    void saveMainTeacher(String courseName, UserDTO userDTO);
 
 }

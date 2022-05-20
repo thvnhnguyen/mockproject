@@ -2,6 +2,7 @@ package com.thvnhng.mockproject.Service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thvnhng.mockproject.DTO.CourseDTO;
+import com.thvnhng.mockproject.DTO.CourseResponseDTO;
 import com.thvnhng.mockproject.DTO.UserDTO;
 import com.thvnhng.mockproject.Entity.*;
 import com.thvnhng.mockproject.Repository.CourseRepository;
@@ -31,13 +32,13 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public Boolean checkExistId(Long id) {
-        return courseRepository.existsCoursesById(id);
+        return courseRepository.existsCoursesByIdAndDeletedAtIsNull(id);
     }
 
 //    ok
     @Override
-    public Boolean checkExistMainTeacher(String courseName, Sort sort) {
-        Courses course = courseRepository.findByCourseName(courseName);
+    public Boolean checkExistMainTeacher(Long courseId, Sort sort) {
+        Courses course = courseRepository.getById(courseId);
         List<Users> mainTeacherList = userRepository.findAllByCoursesListContainingAndRolesListContaining(
                 course,
                 roleRepository.findByRoleName(ERoles.ROLE_MAIN_TEACHER),
@@ -70,9 +71,9 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public List<CourseDTO> listAll(Sort sort) {
+    public List<CourseResponseDTO> listAll(Sort sort) {
         List<Courses> coursesList = courseRepository.findAll(sort);
-        List<CourseDTO> courseDTOList = new ArrayList<>();
+        List<CourseResponseDTO> courseDTOList = new ArrayList<>();
         for (Courses course : coursesList) {
             courseDTOList.add(convertToDTO(course));
         }
@@ -114,12 +115,13 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public CourseDTO detail(Long id) {
-        return convertToDTO(courseRepository.getById(id));
+    public CourseResponseDTO detail(Long id) {
+        Optional<Courses> coursesOptional = courseRepository.findById(id);
+        return convertToDTO(coursesOptional.get());
     }
 
     @Override
-    public CourseDTO detailByCourseName(String courseName) {
+    public CourseResponseDTO detailByCourseName(String courseName) {
         return convertToDTO(courseRepository.findByCourseName(courseName));
     }
 
@@ -145,17 +147,17 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public void saveMainTeacher(String courseName, UserDTO userDTO) {
-        String username = userDTO.getUsername();
-        Users user = userRepository.findUsersByUsername(username);
+    public void saveMainTeacher(Long courseId, UserDTO userDTO) {
+        Long id = 18L;
+        Users user = userRepository.findById(id).get();
 //        List<ERoles> eRolesList = new ArrayList<>();
 //        eRolesList.add(ERoles.ROLE_SUBJECT_TEACHER);
 //        eRolesList.add(ERoles.ROLE_MAIN_TEACHER);
 //        List<Roles> rolesList = roleRepository.findByRoleNameIn(eRolesList);
 //        user.setRolesList(rolesList);
-        user.getRolesList().add(roleRepository.findByRoleName(ERoles.ROLE_MAIN_TEACHER));
-        user.setCourseNamePermit(courseName);
-        Courses course = courseRepository.findByCourseName(courseName);
+//        user.getRolesList().add(roleRepository.findByRoleName(ERoles.ROLE_MAIN_TEACHER));
+        Courses course = courseRepository.findById(courseId).get();
+        user.setCourseNamePermit(course.getCourseName());
         course.getUsersList().add(user);
 //        courseRepository.save(course);
     }
@@ -169,6 +171,20 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
+    public boolean saveStudentToCourse(Long courseId, List<Long> userIds) {
+        for (Long userId : userIds) {
+            if (!userService.isStudentIsFree(userId)) {
+                return false;
+            }
+            Users user = userRepository.getById(userId);
+            Courses course = courseRepository.getById(courseId);
+            course.getUsersList().add(user);
+            courseRepository.save(course);
+        }
+        return true;
+    }
+
+    @Override
     public void setDelete(Long id,String deletedBy, LocalDateTime deletedAt) {
         Optional<Courses> coursesOptional = courseRepository.findById(id);
         if (coursesOptional.isPresent()) {
@@ -179,7 +195,7 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public CourseDTO convertToDTO(Courses course) {
+    public CourseResponseDTO convertToDTO(Courses course) {
         List<String> strUserList = new ArrayList<>();
         List<String> strScoreList = new ArrayList<>();
         List<Users> usersList = course.getUsersList();
@@ -192,10 +208,22 @@ public class CourseServiceImpl implements CourseService {
         }
         course.setUsersList(null);
         course.setScoresList(null);
-        CourseDTO courseDTO = objectMapper.convertValue(course, CourseDTO.class);
-        courseDTO.setUsersList(strUserList);
-        courseDTO.setScoresList(strScoreList);
-        return courseDTO;
+        CourseResponseDTO courseResponseDTO = objectMapper.convertValue(course, CourseResponseDTO.class);
+        courseResponseDTO.setUsersList(strUserList);
+        courseResponseDTO.setScoresList(strScoreList);
+        return courseResponseDTO;
+    }
+
+    @Override
+    public boolean checkTeacherPermission(String username, Long courseId) {
+        Users user = userRepository.findAllByUsernameAndDeletedAtIsNull(username);
+        Roles role = roleRepository.findByRoleName(ERoles.ROLE_ADMIN);
+        if (user.getRolesList().contains(role)) {
+            return true;
+        }
+        List<Courses> coursesList = user.getCoursesList();
+        Optional<Courses> courses = courseRepository.findById(courseId);
+        return coursesList.contains(courses.get());
     }
 
 }

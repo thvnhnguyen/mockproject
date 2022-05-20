@@ -10,7 +10,8 @@ import java.util.Optional;
 @Repository
 public interface SubjectRepository extends JpaRepository<Subjects, Long> {
 
-    Subjects findByIdAndDeletedAtIsNull(Long id);
+    Boolean existsBySubjectName(String subjectName);
+    Optional<Subjects> findByIdAndDeletedAtIsNull(Long subjectId);
     Subjects findBySubjectName(String subjectName);
     List<Subjects> findAllBySubjectNameContaining(String subjectName);
 }

@@ -1,17 +1,19 @@
 package com.thvnhng.mockproject.Valid.Annotation;
 
-import com.thvnhng.mockproject.Valid.UserValidator;
+import com.thvnhng.mockproject.Valid.RoleNameValidation;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;
 import java.lang.annotation.*;
 
 @Documented
-@Constraint(validatedBy = UserValidator.class)
+@Constraint(validatedBy = RoleNameValidation.class)
 @Target( { ElementType.METHOD, ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface CheckUser {
-    String message() default "User is already exist";
+public @interface ExistRoleName {
+
+    String message() default "Role name is not exist";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
+
 }

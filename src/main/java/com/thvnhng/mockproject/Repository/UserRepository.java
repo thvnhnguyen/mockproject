@@ -25,6 +25,8 @@ public interface UserRepository extends JpaRepository<Users, Long> {
     List<Users> findAllByUsernameContaining(String username);
     List<Users> findAllByCoursesListContainingAndRolesListContaining(Courses courses, Roles roles, Sort sort);
     List<Users> findAllBySubjectUser(Subjects subject);
-    Users findUsersByUsername(String username);
+    Users findAllByUsernameAndDeletedAtIsNull(String username);
+    Users findUsersByIdAndDeletedAtIsNull(Long id);
+    Users findByUsername(String username);
     List<Users> findAllByUsernameIn(List<String> userList);
 }

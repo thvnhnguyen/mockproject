@@ -1,5 +1,6 @@
 package com.thvnhng.mockproject.DTO;
 
+import com.thvnhng.mockproject.Valid.Annotation.UniqueSubjectName;
 import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
@@ -17,7 +18,8 @@ public class SubjectDTO {
     protected String deletedBy;
     protected LocalDateTime deletedAt;
     @NotEmpty(message = "Name of role cannot be empty")
+    @UniqueSubjectName
     private String subjectName;
-    private List<String> reportsList;
+    private List<String> scoresList;
 
 }

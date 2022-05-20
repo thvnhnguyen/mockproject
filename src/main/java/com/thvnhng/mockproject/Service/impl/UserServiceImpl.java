@@ -1,9 +1,9 @@
 package com.thvnhng.mockproject.Service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thvnhng.mockproject.DTO.ProfileDTO;
 import com.thvnhng.mockproject.DTO.UserDTO;
 import com.thvnhng.mockproject.Entity.*;
-import com.thvnhng.mockproject.Repository.CourseRepository;
 import com.thvnhng.mockproject.Repository.RoleRepository;
 import com.thvnhng.mockproject.Repository.SubjectRepository;
 import com.thvnhng.mockproject.Repository.UserRepository;
@@ -32,7 +32,6 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final SubjectRepository subjectRepository;
-    private final CourseRepository courseRepository;
     private final ObjectMapper objectMapper;
     private final JavaMailSender mailSender;
     private final PasswordEncoder encoder;
@@ -58,6 +57,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Boolean isStudentIsFree(Long userId) {
+        Users user = userRepository.findUsersByIdAndDeletedAtIsNull(userId);
+        for (Courses course : user.getCoursesList()) {
+            if (course.getDeletedAt() == null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
     public int getTotalItem() {
         return (int) userRepository.count();
     }
@@ -72,10 +82,11 @@ public class UserServiceImpl implements UserService {
         user.setFirstName("user");
         user.setLastName(RandomString.make(10));
         user.setPassword(encoder.encode(signUpRequest.getPassword()));
-        List<String> strRoles = signUpRequest.getRoleList();
-        List<ERoles> eRolesList = new ArrayList<>();
-        validUserRoleList(strRoles, eRolesList);
-        List<Roles> roles = roleRepository.findByRoleNameIn(eRolesList);
+        String strRoles = signUpRequest.getRoleUser();
+        ERoles eRole = ERoles.valueOf(strRoles);
+        List<Roles> roles = new ArrayList<>();
+        Roles role = roleRepository.findByRoleName(eRole);
+        roles.add(role);
         user.setRolesList(roles);
         userRepository.save(user);
     }
@@ -88,31 +99,42 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO detailByUsername(String username) {
-        Users user = userRepository.findUsersByUsername(username);
+        Users user = userRepository.findAllByUsernameAndDeletedAtIsNull(username);
         return convertListsToDTO(user);
     }
 
     @Override
-    public Users detail(String username) {
-        return userRepository.findUsersByUsername(username);
+    public ProfileDTO profile(String username) {
+        Users user = userRepository.findAllByUsernameAndDeletedAtIsNull(username);
+        return new ProfileDTO(
+                user.getId(),
+                user.getCreateDate(),
+                user.getUsername(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                user.getGender(),
+                user.getContactNumber(),
+                user.getAddress(),
+                user.getBirthDate()
+        );
     }
 
     @Override
-    public UserDTO updateUserInfo(UserDTO userDTO) {
-        Users user = userRepository.findUsersByUsername(userDTO.getUsername());
-        user.setEmail(userDTO.getEmail());
-        user.setFirstName(userDTO.getFirstName());
-        user.setLastName(userDTO.getLastName());
-        user.setContactNumber(userDTO.getContactNumber());
-        user.setAddress(userDTO.getAddress());
-        user.setBirthDate(userDTO.getBirthDate());
+    public void updateProfile(ProfileDTO profileDTO) {
+        Users user = userRepository.findAllByUsernameAndDeletedAtIsNull(profileDTO.getUsername());
+        user.setFirstName(profileDTO.getFirstName());
+        user.setLastName(profileDTO.getLastName());
+        user.setContactNumber(profileDTO.getContactNumber());
+        user.setAddress(profileDTO.getAddress());
+        user.setGender(profileDTO.getGender());
+        user.setBirthDate(profileDTO.getBirthDate());
         userRepository.save(user);
-        return userDTO;
     }
 
     @Override
     public void updateUserRoles(UserDTO userDTO) {
-        Users user = userRepository.findUsersByUsername(userDTO.getUsername());
+        Users user = userRepository.findAllByUsernameAndDeletedAtIsNull(userDTO.getUsername());
         List<String> strNewRoles = userDTO.getRoleList();
         List<ERoles> newRolesList = new ArrayList<>();
         validUserRoleList(strNewRoles, newRolesList);
@@ -163,7 +185,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String getEncodedPassword(String username) {
-        return userRepository.findUsersByUsername(username).getPassword();
+        return userRepository.findAllByUsernameAndDeletedAtIsNull(username).getPassword();
     }
 
     @Override
@@ -183,7 +205,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void changePassword(String username, String newPassword) {
-        Users user = userRepository.findUsersByUsername(username);
+        Users user = userRepository.findAllByUsernameAndDeletedAtIsNull(username);
         user.setPassword(encoder.encode(newPassword));
         userRepository.save(user);
     }
@@ -218,7 +240,6 @@ public class UserServiceImpl implements UserService {
         userDTO.setRoleList(roles);
         userDTO.setCoursesList(courses);
         userDTO.setScoresList(scores);
-        userDTO.setPassword(null);
         return userDTO;
     }
 
@@ -258,22 +279,5 @@ public class UserServiceImpl implements UserService {
         user.setOtpRequestedTime(null);
         userRepository.save(user);
     }
-
-    @Override
-    public void saveMainTeacher(String courseName, UserDTO userDTO) {
-        String username = userDTO.getUsername();
-        Users user = detail(username);
-//        List<ERoles> eRolesList = new ArrayList<>();
-//        eRolesList.add(ERoles.ROLE_SUBJECT_TEACHER);
-//        eRolesList.add(ERoles.ROLE_MAIN_TEACHER);
-//        List<Roles> rolesList = roleRepository.findByRoleNameIn(eRolesList);
-//        user.setRolesList(rolesList);
-        user.getRolesList().add(roleRepository.findByRoleName(ERoles.ROLE_MAIN_TEACHER));
-        user.setCourseNamePermit(courseName);
-        Courses course = courseRepository.findByCourseName(courseName);
-        course.getUsersList().add(user);
-//        courseRepository.save(course);
-    }
-
 
 }

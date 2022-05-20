@@ -32,44 +32,51 @@ public class CourseAPI {
     @GetMapping
     public ResponseEntity<?> list(
             @RequestParam(value = "sortBy", required = false, defaultValue = "id") String sortBy,
-            @RequestParam(value = "order", required = false, defaultValue = "asc") String order
+            @RequestParam(value = "order", required = false, defaultValue = "desc") String order
     ) {
         try {
-            if ("desc".equals(order)) {
-                return ResponseEntity.ok(courseService.listAll(Sort.by(sortBy).descending()));
-            } else {
+            if ("asc".equals(order)) {
                 return ResponseEntity.ok(courseService.listAll(Sort.by(sortBy).ascending()));
+            } else {
+                return ResponseEntity.ok(courseService.listAll(Sort.by(sortBy).descending()));
             }
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new MessageResponse("404 Not Found"));
         }
     }
 
-//    Detail course theo id ok
+//    Test ok
     @GetMapping("/{course_id}")
-    public ResponseEntity<?> detail(@PathVariable(name = "course_id") Long id) {
-        if (!courseService.checkExistId(id)) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Not found course with id = " + id));
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> detail(@PathVariable(name = "course_id") Long courseId) {
+        if (!courseService.checkExistId(courseId)) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Not found course with id = " + courseId));
         }
-        return ResponseEntity.ok(courseService.detail(id));
+        if (!courseService.checkTeacherPermission(currentUsername(), courseId)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("You cannot view detail of this class"));
+        }
+        return ResponseEntity.ok(courseService.detail(courseId));
     }
 
 //    List student trong course ok
-    @GetMapping("/{course_id}/listStudent")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @GetMapping("/{course_id}/students")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MAIN_TEACHER', 'ROLE_SUBJECT_TEACHER')")
     public ResponseEntity<?> listStudent(
-            @PathVariable(name = "course_id") Long id,
+            @PathVariable(name = "course_id") Long courseId,
             @RequestParam(value = "sortBy", required = false, defaultValue = "id") String sortBy,
-            @RequestParam(value = "order", required = false, defaultValue = "asc") String order
+            @RequestParam(value = "order", required = false, defaultValue = "desc") String order
     ) {
-        if (!courseService.checkExistId(id)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not Found Course id = " + id);
+        if (!courseService.checkExistId(courseId)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not Found Course id = " + courseId);
+        }
+        if (!courseService.checkTeacherPermission(currentUsername(), courseId)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("You cannot view detail of this class"));
         }
         try {
-            if ("desc".equals(order)) {
-                return ResponseEntity.ok(courseService.listStudent(id, Sort.by(sortBy).descending()));
+            if ("asc".equals(order)) {
+                return ResponseEntity.ok(courseService.listStudent(courseId, Sort.by(sortBy).ascending()));
             } else {
-                return ResponseEntity.ok(courseService.listStudent(id, Sort.by(sortBy).ascending()));
+                return ResponseEntity.ok(courseService.listStudent(courseId, Sort.by(sortBy).descending()));
             }
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new MessageResponse("404 Not Found"));
@@ -93,15 +100,15 @@ public class CourseAPI {
     public ResponseEntity<?> teacherList(
             @PathVariable(name = "course_id") Long id,
             @RequestParam(value = "sortBy", required = false, defaultValue = "id") String sortBy,
-            @RequestParam(value = "order", required = false, defaultValue = "asc") String order
+            @RequestParam(value = "order", required = false, defaultValue = "desc") String order
     ) {
         if (!courseService.checkExistId(id)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not Found Course id = " + id);
         }
-        if ("desc".equals(order)) {
-            return ResponseEntity.ok(courseService.listTeacher(id, Sort.by(sortBy).descending()));
-        } else {
+        if ("asc".equals(order)) {
             return ResponseEntity.ok(courseService.listTeacher(id, Sort.by(sortBy).ascending()));
+        } else {
+            return ResponseEntity.ok(courseService.listTeacher(id, Sort.by(sortBy).descending()));
         }
     }
 
@@ -120,58 +127,43 @@ public class CourseAPI {
         courseService.update(courseDTO);
         return ResponseEntity.ok().body(new MessageResponse("Updated course"));
     }
-
-    @PutMapping("/{course_name}/addStudent")
+// Not tested yet
+    @PutMapping("/{course_id}/students/add")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<?> addStudent(@PathVariable(name = "course_name") String courseName,@RequestBody List<Long> userIds) {
-        if (!courseService.isExistCourse(courseName)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not Found Course name = " + courseName);
+    public ResponseEntity<?> addStudent(@PathVariable(name = "course_id") Long courseId, @RequestBody List<Long> userIds) {
+        if (!courseService.checkExistId(courseId)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("Not Found Course id = " + courseId));
         }
-        for (Long userId : userIds) {
-            if (userService.checkExistId(userId)) {
-                UserDTO user = userService.detailById(userId);
-                if (!user.getRoleList().contains(ERoles.ROLE_STUDENT.toString())) {
-                    return ResponseEntity
-                            .badRequest()
-                            .body(new MessageResponse("User " + user.getFullName() + "is not a student "));
-                }
-                if (user.getCoursesList().size() != 0) {
-                    return ResponseEntity
-                            .badRequest()
-                            .body(new MessageResponse("Student " + user.getFullName() + "is studying in class " + user.getCoursesList().toString()));
-                }
-                courseService.saveSubjectTeacher(courseName, userId);
-            }
+        if (courseService.saveStudentToCourse(courseId, userIds)) {
             return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(new MessageResponse("Not found student with id = " + userId));
+                    .ok()
+                    .body(new MessageResponse("Students have been added to the class "));
+        } else {
+            return ResponseEntity.badRequest().body("List student id is not valid");
         }
-        return ResponseEntity
-                .ok()
-                .body(new MessageResponse("Students have been added to the class " + courseName));
     }
 
 //    Add main teacher vao course
-    @PutMapping("/{course_name}/addMainTeacher")
+    @PutMapping("/{course_id}/teachers/addMain")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<?> addMainTeacher(@PathVariable(name = "course_name") String courseName, @RequestBody UserDTO userDTO) {
-        if (!courseService.isExistCourse(courseName)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not Found Course name " + courseName);
+    public ResponseEntity<?> addMainTeacher(@PathVariable(name = "course_id") Long courseId, @RequestBody UserDTO userDTO) {
+        if (!courseService.checkExistId(courseId)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not Found Course id " + courseId);
         }
-        if (courseService.checkExistMainTeacher(courseName, Sort.by("id"))) {
+        if (courseService.checkExistMainTeacher(courseId, Sort.by("id"))) {
             return ResponseEntity.badRequest().body(new MessageResponse("The class has a main teacher"));
         }
         if (userService.detailByUsername(userDTO.getUsername()).getRoleList().contains(ERoles.ROLE_MAIN_TEACHER.toString())) {
             return ResponseEntity.badRequest().body(new MessageResponse("This teacher has been in charge of another class"));
         }
-        userService.saveMainTeacher(courseName, userDTO);
+        courseService.saveMainTeacher(courseId, userDTO);
         return ResponseEntity.ok().body(new MessageResponse("Added "+userDTO.getFullName()+" to be main teacher of course"));
     }
 
 //  Them teacher bo mon vao lop
-    @PutMapping("/{course_name}/addSubjectTeacher/{user_id}")
+    @PutMapping("/{course_id}/teachers/addSub")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<?> addSubjectTeacher(@PathVariable(name = "course_name") String courseName, @PathVariable(name = "user_id") Long userId) {
+    public ResponseEntity<?> addSubjectTeacher(@PathVariable(name = "course_id") String courseName, @PathVariable(name = "user_id") Long userId) {
         if (!courseService.isExistCourse(courseName)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not Found Course name = " + courseName);
         }
@@ -211,6 +203,10 @@ public class CourseAPI {
             return ResponseEntity.ok().body(new MessageResponse("Course inactivated"));
         }
         return ResponseEntity.badRequest().body(new MessageResponse("No course be found with id = " + id));
+    }
+
+    private String currentUsername() {
+        return SecurityContextHolder.getContext().getAuthentication().getName();
     }
 
 }

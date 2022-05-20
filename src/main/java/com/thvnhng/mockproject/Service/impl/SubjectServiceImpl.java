@@ -13,14 +13,19 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
-public class SubjectServiceImpl implements SubjectService{
+public class SubjectServiceImpl implements SubjectService {
 
     private final SubjectRepository subjectRepository;
-    private final ScoreRepository scoreRepository;
     private final ObjectMapper objectMapper;
+
+    @Override
+    public Boolean isExistSubjectName(String subjectName) {
+        return subjectRepository.existsBySubjectName(subjectName);
+    }
 
     @Override
     public List<SubjectDTO> listAll() {
@@ -33,8 +38,16 @@ public class SubjectServiceImpl implements SubjectService{
     }
 
     @Override
-    public SubjectDTO detail(Long id) {
-        return objectMapper.convertValue(subjectRepository.findByIdAndDeletedAtIsNull(id), SubjectDTO.class);
+    public SubjectDTO detail(Long subjectId) {
+        Optional<Subjects> subjectsOptional = subjectRepository.findByIdAndDeletedAtIsNull(subjectId);
+        if (subjectsOptional.isPresent()) {
+            Subjects subject = subjectsOptional.get();
+            subject.setUsersList(null);
+            subject.setScoresList(null);
+            return objectMapper.convertValue(subject, SubjectDTO.class);
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -45,11 +58,12 @@ public class SubjectServiceImpl implements SubjectService{
 
     @Override
     public void update(SubjectDTO subjectDTO) {
-//        List<Reports> reportsList = convertReportList(subjectDTO.getReportsList());
-        subjectDTO.setReportsList(null);
-        Subjects subject = objectMapper.convertValue(subjectDTO, Subjects.class);
-//        subject.setReportsList(reportsList);
-        subjectRepository.save(subject);
+        Optional<Subjects> subjectsOptional = subjectRepository.findById(subjectDTO.getId());
+        if (subjectsOptional.isPresent()) {
+            Subjects subject = subjectsOptional.get();
+            subject.setSubjectName(subjectDTO.getSubjectName());
+            subjectRepository.save(subject);
+        }
     }
 
     @Override
@@ -63,8 +77,7 @@ public class SubjectServiceImpl implements SubjectService{
     }
 
     @Override
-    public List<Scores> convertReportList(List<String> strReportList) {
-//        List<Reports> reportsList = re
+    public List<Scores> convertScoreList(List<String> strReportList) {
         return null;
     }
 

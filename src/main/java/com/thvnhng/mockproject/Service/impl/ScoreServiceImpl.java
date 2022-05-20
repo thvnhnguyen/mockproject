@@ -11,7 +11,6 @@ import com.thvnhng.mockproject.Repository.ScoreRepository;
 import com.thvnhng.mockproject.Repository.SubjectRepository;
 import com.thvnhng.mockproject.Repository.UserRepository;
 import com.thvnhng.mockproject.Service.ScoreService;
-import com.thvnhng.mockproject.constant.SystemConstant;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -71,9 +70,9 @@ public class ScoreServiceImpl implements ScoreService {
     }
 
     public ScoreDTO create(ScoreDTO scoreDTO) {
-        String userFullName = userRepository.findUsersByUsername(scoreDTO.getUsername()).getFullName();
+        String userFullName = userRepository.findAllByUsernameAndDeletedAtIsNull(scoreDTO.getUsername()).getFullName();
         Scores score = objectMapper.convertValue(scoreDTO, Scores.class);
-        score.setUser(userRepository.findUsersByUsername(scoreDTO.getUsername()));
+        score.setUser(userRepository.findAllByUsernameAndDeletedAtIsNull(scoreDTO.getUsername()));
         score.setCourse(courseRepository.findByCourseName(scoreDTO.getCourseName()));
         score.setSubject(subjectRepository.findBySubjectName(scoreDTO.getSubjectName()));
         String scoreName = scoreDTO.getScoreType() + " " + scoreDTO.getSubjectName() + " of " + userFullName;
@@ -97,7 +96,7 @@ public class ScoreServiceImpl implements ScoreService {
     //    Check teacher co dung lop va dung mon hay k
     @Override
     public boolean validTeacher(ScoreDTO scoreDTO, String username) {
-        Users teacher = userRepository.findUsersByUsername(username);
+        Users teacher = userRepository.findAllByUsernameAndDeletedAtIsNull(username);
         List<Courses> teacherCourse = teacher.getCoursesList();
         Courses course = courseRepository.findByCourseName(scoreDTO.getCourseName());
         Subjects scoreSubject = subjectRepository.findBySubjectName(scoreDTO.getSubjectName());
